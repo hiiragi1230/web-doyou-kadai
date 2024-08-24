@@ -4,7 +4,7 @@ $dbh = new PDO('mysql:host=mysql;dbname=kyototech', 'root', '');
 if (isset($_POST['body'])) {
   // POSTで送られてくるフォームパラメータ body がある場合
 
-  // hogehogeテーブルにINSERTする
+  // karipostテーブルにINSERTする
   $insert_sth = $dbh->prepare("INSERT INTO karipost (text) VALUES (:body)");
   $insert_sth->execute([
       ':body' => $_POST['body'],
@@ -30,7 +30,7 @@ $skip_count = $count_per_page * ($page - 1);
 $count_sth = $dbh->prepare('SELECT COUNT(*) FROM karipost;');
 $count_sth->execute();
 $count_all = $count_sth->fetchColumn();
-if ($skip_count >= $count_all) {
+if ($skip_count > $count_all) {
     // スキップする行数が全行数より多かったらおかしいのでエラーメッセージ表示し終了
     print('このページは存在しません!');
     return;
@@ -82,8 +82,6 @@ $all_post_ids = $all_ids_sth->fetchAll(PDO::FETCH_COLUMN, 0);
 // IDをキーとする連想配列を作成
 $post_ids = array_flip($all_post_ids);
 
-// hogehogeテーブルからデータを取得 (ページネーション用)
-$select_sth = $dbh->prepare('SELECT * FROM karipost ORDER BY created_at ASC LIMIT :count_per_page OFFSET :skip_count');
 $select_sth->bindParam(':count_per_page', $count_per_page, PDO::PARAM_INT);
 $select_sth->bindParam(':skip_count', $skip_count, PDO::PARAM_INT);
 $select_sth->execute();
