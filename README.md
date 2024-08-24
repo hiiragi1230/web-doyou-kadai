@@ -13,7 +13,7 @@
 ```sql
 CREATE TABLE karipost (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    TEXT NOT NULL,
+    text TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ); 
 ```
