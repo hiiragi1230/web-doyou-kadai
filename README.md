@@ -10,10 +10,12 @@
 
 ### 以下のSQL文を入れる
 
-```CREATE TABLE karipost (
+```sql
+CREATE TABLE karipost (
     id INT AUTO_INCREMENT PRIMARY KEY,
     TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-); ```
+); 
+```
 
 
