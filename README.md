@@ -18,11 +18,15 @@
 ```bash
 docker compose exec mysql mysql kyototech
 ```
+### 動かない場合
+```
+docker start mysql
+```
 
 ### 以下のSQL文を入れる
 
 ```sql
-CREATE TABLE karipost (
+CREATE TABLE posts (
     id INT AUTO_INCREMENT PRIMARY KEY,
     text TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
