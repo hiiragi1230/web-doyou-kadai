@@ -2,11 +2,19 @@
 $dbh = new PDO('mysql:host=mysql;dbname=kyototech', 'root', '');
 session_start();
 
+// GETパラメータからoffsetとlimitを取得（デフォルト値を設定）
+$offset = isset($_GET['offset']) ? (int)$_GET['offset'] : 0;
+$limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
+
+// SQLクエリを修正してページネーション対応
 $sql = 'SELECT bbs_entries.*, users.name AS user_name, users.icon_filename AS user_icon_filename'
   . ' FROM bbs_entries'
   . ' INNER JOIN users ON bbs_entries.user_id = users.id'
-  . ' ORDER BY bbs_entries.created_at DESC';
+  . ' ORDER BY bbs_entries.created_at DESC'
+  . ' LIMIT :limit OFFSET :offset';
 $select_sth = $dbh->prepare($sql);
+$select_sth->bindValue(':limit', $limit, PDO::PARAM_INT);
+$select_sth->bindValue(':offset', $offset, PDO::PARAM_INT);
 $select_sth->execute();
 
 // JSONに吐き出す用のArray
@@ -26,6 +34,16 @@ foreach ($select_sth as $entry) {
 header("HTTP/1.1 200 OK");
 header("Content-Type: application/json");
 print(json_encode(['entries' => $result_entries]));
+
+
+
+
+
+
+
+
+
+
 
 
 

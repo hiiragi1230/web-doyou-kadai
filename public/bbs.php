@@ -31,14 +31,10 @@ if (isset($_POST['body']) && !empty($_SESSION['login_user_id'])) {
     ':image_filename' => $image_filename,
   ]);
   // 処理が終わったらリダイレクトする
-  // リダイレクトしないと，リロード時にまた同じ内容でPOSTすることになる
   header("HTTP/1.1 302 Found");
   header("Location: ./bbs.php");
   return;
 }
-
-// いままで保存してきたものを取得
-
 ?>
 
 <?php if(empty($_SESSION['login_user_id'])): ?>
@@ -75,75 +71,76 @@ if (isset($_POST['body']) && !empty($_SESSION['login_user_id'])) {
 </dl>
 <div id="entriesRenderArea"></div>
 
-
-
-
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-
   const entryTemplate = document.getElementById('entryTemplate');
   const entriesRenderArea = document.getElementById('entriesRenderArea');
-  const request = new XMLHttpRequest();
-  request.onload = (event) => {
-    const response = event.target.response;
-    response.entries.forEach((entry) => {
-      // テンプレートとするものから要素をコピー
-      const entryCopied = entryTemplate.cloneNode(true);
-      // display: none を display: block に書き換える
-      entryCopied.style.display = 'block';
+  let offset = 0; // 初期オフセット
+  const limit = 10; // 1回のロードで取得する件数
+  let loading = false; // データロード中フラグ
 
-      // 番号(ID)を表示
-      entryCopied.querySelector('[data-role="entryIdArea"]').innerText = entry.id.toString();
+  const loadEntries = () => {
+    if (loading) return; // 現在ロード中ならスキップ
+    loading = true;
 
-      // アイコン画像が存在する場合は表示 なければimg要素ごと非表示に
-      if (entry.user_icon_file_url) {
-        entryCopied.querySelector('[data-role="entryUserIconImage"]').src = entry.user_icon_file_url;
-      } else {
-        entryCopied.querySelector('[data-role="entryUserIconImage"]').style.display = 'none';
-      }
-      // 名前を表示
-      entryCopied.querySelector('[data-role="entryUserNameArea"]').innerText = entry.user_name;
+    const request = new XMLHttpRequest();
+    request.onload = (event) => {
+      const response = event.target.response;
+      response.entries.forEach((entry) => {
+        const entryCopied = entryTemplate.cloneNode(true);
+        entryCopied.style.display = 'block';
+        entryCopied.querySelector('[data-role="entryIdArea"]').innerText = entry.id.toString();
+        entryCopied.querySelector('[data-role="entryUserNameArea"]').innerText = entry.user_name;
+        entryCopied.querySelector('[data-role="entryCreatedAtArea"]').innerText = entry.created_at;
+        entryCopied.querySelector('[data-role="entryBodyArea"]').innerHTML = entry.body;
+        if (entry.user_icon_file_url) {
+          entryCopied.querySelector('[data-role="entryUserIconImage"]').src = entry.user_icon_file_url;
+        } else {
+          entryCopied.querySelector('[data-role="entryUserIconImage"]').style.display = 'none';
+        }
+        if (entry.image_file_url) {
+          const imageElement = new Image();
+          imageElement.src = entry.image_file_url;
+          imageElement.style.display = 'block';
+          imageElement.style.marginTop = '1em';
+          imageElement.style.maxHeight = '300px';
+          imageElement.style.maxWidth = '300px';
+          entryCopied.querySelector('[data-role="entryBodyArea"]').appendChild(imageElement);
+        }
+        entriesRenderArea.appendChild(entryCopied);
+      });
+      offset += limit; // 次のオフセットを更新
+      loading = false; // ロード完了
+    };
+    request.open('GET', `/bbs_json.php?offset=${offset}&limit=${limit}`, true);
+    request.responseType = 'json';
+    request.send();
+  };
 
-      // 投稿日時を表示
-      entryCopied.querySelector('[data-role="entryCreatedAtArea"]').innerText = entry.created_at;
+  // 最初のデータロード
+  loadEntries();
 
-      // 本文を表示 (ここはHTMLなのでinnerHTMLで)
-      entryCopied.querySelector('[data-role="entryBodyArea"]').innerHTML = entry.body;
-
-      // 画像が存在する場合に本文の下部に画像を表示
-      if (entry.image_file_url) {
-        const imageElement = new Image();
-        imageElement.src = entry.image_file_url; // 画像URLを設定
-        imageElement.style.display = 'block'; // ブロック要素にする (img要素はデフォルトではインライン要素のため)
-        imageElement.style.marginTop = '1em'; // 画像上部の余白を設定
-        imageElement.style.maxHeight = '300px'; // 画像を表示する最大サイズ(縦)を設定
-        imageElement.style.maxWidth = '300px'; // 画像を表示する最大サイズ(横)を設定
-        entryCopied.querySelector('[data-role="entryBodyArea"]').appendChild(imageElement); // 本文エリアに画像を追加
-      }
-
-      // 最後に実際の描画を行う
-      entriesRenderArea.appendChild(entryCopied);
-    });
-  }
-  request.open('GET', '/bbs_json.php', true); // bbs_json.php を叩く
-  request.responseType = 'json';
-  request.send();
-
-
+  // スクロールイベントを監視
+  window.addEventListener('scroll', () => {
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
+      loadEntries(); // ページ下部に近づいたらロード
+    }
+  });
 
   const imageInput = document.getElementById("imageInput");
   imageInput.addEventListener("change", () => {
     if (imageInput.files.length < 1) {
-      // 未選択の場合
       return;
     }
     if (imageInput.files[0].size > 5 * 1024 * 1024) {
-      // ファイルが5MBより多い場合
       alert("5MB以下のファイルを選択してください。");
       imageInput.value = "";
     }
   });
 });
 </script>
+
+
+
 
 
