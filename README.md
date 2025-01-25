@@ -4,7 +4,7 @@
 
 ## クローンする
 ```bash
-    git clone https://github.com/hiiragi1230/web-zenki-kadai
+    git clone git@github.com:hiiragi1230/web-doyou-kadai.git
 ```
 
 ## コンテナ起動
@@ -26,11 +26,24 @@ docker start mysql
 ### 以下のSQL文を入れる
 
 ```sql
-CREATE TABLE posts (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    text TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-); 
+
+CREATE TABLE `bbs_entries` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `user_id` INT UNSIGNED NOT NULL,
+    `body` TEXT NOT NULL,
+    `image_filename` TEXT DEFAULT NULL,
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE `users` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `name` TEXT NOT NULL,
+    `email` TEXT NOT NULL,
+    `password` TEXT NOT NULL,
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+
 ```
 
 ## localhost/enshu2.php に接続
